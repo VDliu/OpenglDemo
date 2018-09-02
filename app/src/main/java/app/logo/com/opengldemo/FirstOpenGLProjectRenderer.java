@@ -20,7 +20,7 @@ class FirstOpenGLProjectRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         LogDebug.e(TAG, "onSurfaceCreated......");
-        GLES20.glClearColor(1.0f, 0, 0, 0);
+        GLES20.glClearColor(1.0f, 1.0f, 0, 0);
     }
 
     @Override
@@ -31,8 +31,7 @@ class FirstOpenGLProjectRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        LogDebug.e(TAG, "onDrawFrame" +
-                "......");
+        LogDebug.e(TAG, "onDrawFrame......");
         //清空屏幕，会使用glClearColor定义的颜色填充整个屏幕
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
