@@ -22,7 +22,7 @@ public class FirstOpenGLProjectActivity extends AppCompatActivity {
 
         if (checkIsSurpportES2()) {
             glSurfaceView.setEGLContextClientVersion(2);
-            glSurfaceView.setRenderer(new FirstOpenGLProjectRenderer());
+            glSurfaceView.setRenderer(new AirHockeyRenderer(this));
             renderSet = true;
         } else {
             Toast.makeText(this, "this device is not surppot opengles 2.0", Toast.LENGTH_LONG).show();
