@@ -11,4 +11,9 @@ public class LogDebug {
         if (debug)
             android.util.Log.e(TAG, msg);
     }
+
+    public static void d(String TAG, String msg) {
+        if (debug)
+            android.util.Log.d(TAG, msg);
+    }
 }
