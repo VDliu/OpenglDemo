@@ -37,7 +37,7 @@ public class ShaderHelper {
         final int[] compleStatus = new int[1];
         GLES20.glGetShaderiv(shaderObjectId,GLES20.GL_COMPILE_STATUS,compleStatus,0);
 
-        String complieInfo = " Result of compling source: +\n"
+        String complieInfo = " Result of compling source:\n"
                 + shaderCode+ "\n" + GLES20.glGetShaderInfoLog(shaderObjectId);
         LogDebug.d(TAG,complieInfo);
         //如果编译失败 删除之前创建的着色器对象
@@ -85,8 +85,9 @@ public class ShaderHelper {
         GLES20.glValidateProgram(programObjectId);
         final int validateStatus[] = new int[1];
         GLES20.glGetProgramiv(programObjectId,GLES20.GL_VALIDATE_STATUS,validateStatus,0);
-        LogDebug.d(TAG,"Result of validating program:+\n" +
+        LogDebug.d(TAG,"Result of validating program:\n" + "validateProgram ="+ validateStatus[0]+
                 GLES20.glGetProgramInfoLog(programObjectId));
+
         return validateStatus[0] !=0;
     }
 
