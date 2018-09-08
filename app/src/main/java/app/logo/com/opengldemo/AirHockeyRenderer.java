@@ -3,6 +3,7 @@ package app.logo.com.opengldemo;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
@@ -35,6 +36,8 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
     private int aColorLocation;
     private static final String A_POSITION = "a_Position";
     private int aPositionLocation;
+    private static final String U_MATRIX = "u_Matrix";
+    private int uMatrixLocation;
 
 
     private Context mContext;
@@ -48,21 +51,23 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
             // define the desktop vertex：x y r g b
             //前两个点为坐标，后面三个点代表顶点颜色
             0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-            -0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
-            0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
-            0.5f, 0.5f, 0.7f, 0.7f, 0.7f,
-            -0.5f, 0.5f, 0.7f, 0.7f, 0.7f,
-            -0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
+            -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+            0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+            0.5f, 0.8f, 0.7f, 0.7f, 0.7f,
+            -0.5f, 0.8f, 0.7f, 0.7f, 0.7f,
+            -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
 
             //Line 1
             -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
             0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
 
             //point 1
-            0.0f, -0.25f, 0.0f, 0.0f, 1.0f,
+            0.0f, -0.4f, 0.0f, 0.0f, 1.0f,
             //point 2
-            0.0f, 0.25f, 1.0f, 0.0f, 0.0f
+            0.0f, 0.4f, 1.0f, 0.0f, 0.0f
     };
+    //存储生成的正交投影矩阵，之后会传递给u_matrix
+    private final float[] projectionMatrix = new float[16];
 
     public AirHockeyRenderer(Context context) {
 
@@ -96,6 +101,7 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
         //查找u_color 和a_Position位置
         aColorLocation = GLES20.glGetAttribLocation(programId, A_COLOR);
         aPositionLocation = GLES20.glGetAttribLocation(programId, A_POSITION);
+        uMatrixLocation = GLES20.glGetUniformLocation(programId,U_MATRIX);
 
         //告诉OPengl去找到a_Position对应的数据
         vertexData.position(0);
@@ -114,12 +120,24 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         LogDebug.e(TAG, "width =" + width + ",height = " + height);
         GLES20.glViewport(0, 0, width, height);
+
+        final float aspectRatio = width > height ?
+                (float) width / (float) height :
+                (float) height / (float) width;
+        if (width > height) {
+            //横屏时
+            Matrix.orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
+        } else {
+            Matrix.orthoM(projectionMatrix,0,-1f,1f,-aspectRatio,aspectRatio,-1f,1f);
+        }
+
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
         //清空屏幕，会使用glClearColor定义的颜色填充整个屏幕
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glUniformMatrix4fv(uMatrixLocation,1,false,projectionMatrix,0);
 
         //初始一个白色桌面
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 6);
