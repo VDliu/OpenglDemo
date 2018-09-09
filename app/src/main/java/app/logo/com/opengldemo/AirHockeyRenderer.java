@@ -14,6 +14,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import app.logo.com.opengldemo.util.LogDebug;
+import app.logo.com.opengldemo.util.MatrixHelper;
 import app.logo.com.opengldemo.util.TextResourceReader;
 
 
@@ -66,8 +67,16 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
             //point 2
             0.0f, 0.4f, 1.0f, 0.0f, 0.0f
     };
+
+    // matrix define section, vertec (clip) = ProjectMatrix * ModelMatrix * vertex(model)
+
     //存储生成的正交投影矩阵，之后会传递给u_matrix
     private final float[] projectionMatrix = new float[16];
+
+    //模型矩阵，将物体移至视景体中
+    private final float[] modelMatrix = new float[16];
+
+
 
     public AirHockeyRenderer(Context context) {
 
@@ -101,7 +110,7 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
         //查找u_color 和a_Position位置
         aColorLocation = GLES20.glGetAttribLocation(programId, A_COLOR);
         aPositionLocation = GLES20.glGetAttribLocation(programId, A_POSITION);
-        uMatrixLocation = GLES20.glGetUniformLocation(programId,U_MATRIX);
+        uMatrixLocation = GLES20.glGetUniformLocation(programId, U_MATRIX);
 
         //告诉OPengl去找到a_Position对应的数据
         vertexData.position(0);
@@ -121,7 +130,7 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
         LogDebug.e(TAG, "width =" + width + ",height = " + height);
         GLES20.glViewport(0, 0, width, height);
 
-        final float aspectRatio = width > height ?
+       /* final float aspectRatio = width > height ?
                 (float) width / (float) height :
                 (float) height / (float) width;
         if (width > height) {
@@ -129,7 +138,22 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
             Matrix.orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
         } else {
             Matrix.orthoM(projectionMatrix,0,-1f,1f,-aspectRatio,aspectRatio,-1f,1f);
-        }
+        }*/
+        //生成透视投影矩阵
+        MatrixHelper.perspectiveM(projectionMatrix, 45, (float) width / height, 1f, 10f);
+
+        //生成模型矩阵
+        Matrix.setIdentityM(modelMatrix,0);
+        //将vertex坐标的z坐标平移到-2处
+        Matrix.translateM(modelMatrix,0,0f,0f,-3f);
+        //旋转桌子,
+        Matrix.rotateM(modelMatrix,0,-60f,1f,0f,0f);
+
+        //投影矩阵和模型矩阵相乘得到的矩阵传入着色器中
+
+        final float temp[] = new float[16];
+        Matrix.multiplyMM(temp,0,projectionMatrix,0,modelMatrix,0);
+        System.arraycopy(temp,0,projectionMatrix,0,temp.length);
 
     }
 
@@ -137,7 +161,7 @@ class AirHockeyRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         //清空屏幕，会使用glClearColor定义的颜色填充整个屏幕
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        GLES20.glUniformMatrix4fv(uMatrixLocation,1,false,projectionMatrix,0);
+        GLES20.glUniformMatrix4fv(uMatrixLocation, 1, false, projectionMatrix, 0);
 
         //初始一个白色桌面
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 6);
